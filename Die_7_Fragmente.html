@@ -224,14 +224,26 @@ textarea { resize: vertical; min-height: 70px; }
 }
 
 #player {
-  position: absolute; width: 34px; height: 34px; border-radius: 50%;
-  background: var(--teal); border: 3px solid var(--teal-soft);
+  position: absolute; width: 46px; height: 54px;
   transform: translate(-50%, -50%); pointer-events: none;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.5), 0 0 18px rgba(79,161,180,0.5);
+  filter: drop-shadow(0 5px 10px rgba(0,0,0,0.55)) drop-shadow(0 0 12px rgba(79,161,180,0.35));
 }
-#player::after {
-  content: ""; position: absolute; left: 50%; top: 50%; width: 10px; height: 10px; border-radius: 50%;
-  background: var(--paper); transform: translate(-50%, -50%);
+#player svg { width: 100%; height: 100%; display: block; }
+#player.face-left svg { transform: scaleX(-1); }
+.rob-all { animation: rob-bob 2.4s ease-in-out infinite; }
+@keyframes rob-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2.5px); }
+}
+.rob-eyes { transform-box: fill-box; transform-origin: center; animation: rob-blink 4.2s infinite; }
+@keyframes rob-blink {
+  0%, 93%, 100% { transform: scaleY(1); }
+  96% { transform: scaleY(0.12); }
+}
+.rob-ant { animation: rob-ant 1.8s ease-in-out infinite; }
+@keyframes rob-ant {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
 }
 #carry {
   position: absolute; width: 24px; height: 24px; transform: translate(-50%, -50%);
@@ -474,7 +486,27 @@ textarea { resize: vertical; min-height: 70px; }
         <div class="socket-label" id="socket-label">Sockel</div>
         <div class="socket-core" id="socket-core"></div>
       </div>
-      <div id="player"></div>
+      <div id="player">
+        <svg viewBox="0 0 48 54" aria-hidden="true">
+          <g class="rob-all">
+            <line x1="24" y1="10" x2="24" y2="4.5" stroke="#8DC2CE" stroke-width="2.5" stroke-linecap="round"/>
+            <circle class="rob-ant" cx="24" cy="4" r="3" fill="#8DC2CE"/>
+            <rect x="4" y="17" width="5" height="9" rx="2.5" fill="#2C6E82"/>
+            <rect x="39" y="17" width="5" height="9" rx="2.5" fill="#2C6E82"/>
+            <rect x="8" y="9" width="32" height="25" rx="9" fill="#4FA1B4" stroke="#091A2C" stroke-width="2"/>
+            <rect x="12.5" y="13.5" width="23" height="16" rx="6" fill="#0E223A"/>
+            <g class="rob-eyes">
+              <circle cx="19" cy="20" r="2.7" fill="#FBFCFD"/>
+              <circle cx="29" cy="20" r="2.7" fill="#FBFCFD"/>
+            </g>
+            <path d="M20 24.5 Q24 27.8 28 24.5" stroke="#FBFCFD" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+            <circle cx="10" cy="41" r="3.6" fill="#4FA1B4" stroke="#091A2C" stroke-width="1.5"/>
+            <circle cx="38" cy="41" r="3.6" fill="#4FA1B4" stroke="#091A2C" stroke-width="1.5"/>
+            <rect x="13" y="35" width="22" height="14" rx="7" fill="#2C6E82" stroke="#091A2C" stroke-width="2"/>
+            <circle cx="24" cy="42" r="3.2" fill="#8DC2CE"/>
+          </g>
+        </svg>
+      </div>
       <div id="carry"></div>
     </div>
     <div id="minimap"><div id="mm-player"></div></div>
@@ -1033,6 +1065,8 @@ function loop(ts) {
       var ny = player.y + vy * SPEED * dt;
       if (!blocked(player.x, ny)) { player.y = ny; movedY = true; }
       if (!movedX && !movedY && moveTarget) { moveTarget = null; }
+      if (vx < 0) { playerEl.classList.add("face-left"); }
+      else if (vx > 0) { playerEl.classList.remove("face-left"); }
     }
 
     checkCollisions();
@@ -1041,7 +1075,7 @@ function loop(ts) {
   /* Fragment folgt der Figur weich */
   if (state.carrying) {
     carryPos.x += (player.x - carryPos.x) * Math.min(1, dt * 8);
-    carryPos.y += (player.y - 38 - carryPos.y) * Math.min(1, dt * 8);
+    carryPos.y += (player.y - 48 - carryPos.y) * Math.min(1, dt * 8);
     carryEl.style.left = carryPos.x + "px";
     carryEl.style.top = carryPos.y + "px";
   }
@@ -1243,7 +1277,7 @@ function solveStation(nr) {
   retriggerBlock = nr;
 
   carryPos.x = player.x;
-  carryPos.y = player.y - 38;
+  carryPos.y = player.y - 48;
   carryEl.style.display = "block";
   setHint("Bring das Fragment zum Sockel im Tempel der Fragmente");
   showToast("Fragment erhalten. Bring es zum Tempel der Fragmente.");
